@@ -4,7 +4,7 @@
 
 }
 
-#number, #operator, #display, #clear{
+#number, #operator, #display, #clear, #undo{
 
     font-size: 40px;
 
@@ -20,7 +20,7 @@
 
 }
 
-#number, #operator, #clear{
+#number, #operator, #clear, #undo{
 
     border-radius: 10px;
 
@@ -29,6 +29,7 @@
 #numbersPad, #operatorsPad{
 
     height: 300px;
+    margin: 0px 10px 0px 0px;
 
 }
 
@@ -42,6 +43,8 @@
 
 }
 
+/*Rule isolated to prevent button from resizing*/
+#clear{margin-right: 10px;}
 
 #display{
 
@@ -66,7 +69,6 @@
     border: solid 2px purple;
     background-color: lightcoral;
 
-    margin: 0px 10px 0px 0px;
     padding: 2px;
 
 }
@@ -80,7 +82,6 @@
     border: solid 2px yellowgreen;
     background-color: yellow;
 
-    margin: 0px 10px 0px 0px;
     padding: 2px;
 
 }
