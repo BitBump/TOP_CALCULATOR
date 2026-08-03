@@ -2,6 +2,8 @@
 let operator = "";
 let firstNumber = "";
 let secondNumber = "";
+
+//-FLAGS------------------------------------
 let isOperatorSet = false;
 let isResultCalculated = false;
 
@@ -11,11 +13,17 @@ const numbersPad = document.getElementById("numbersPad");
 const clearButton = document.getElementById("clear");
 const operatorsPad = document.getElementById("operatorsPad");
 
-//-FUNCTIONS--------------------------------
+//-CALC_FUNCTIONS---------------------------
 function addNumbers(a, b){return a + b;}
 function divideNumbers(a, b){return b === 0 ? "Can't divide by '0'" : a / b}
 function subtractNumbers(a, b){return a - b;}
 function multiplyNumbers(a, b){return a * b;}
+
+function trimDecimalPlaces(number){
+
+    return (Math.floor(number * 100)) / 100;
+
+}
 
 function operate(firstNumber, secondNumber, operator){
    
@@ -30,6 +38,7 @@ function operate(firstNumber, secondNumber, operator){
 
 }
 
+//-STATE_FUNCTIONS--------------------------
 function resetCalculator(){
 
     //Reset registers
@@ -52,6 +61,7 @@ function updateCalculatorInternalState(operationResult){
 
 }
 
+//-DISPLAY_FUNCTIONS------------------------
 function clearDisplay(){display.textContent = "";}
 function updateDisplay(content){display.append(content);}
 
@@ -94,7 +104,7 @@ operatorsPad.addEventListener("click", (e) => {
             let operationResult = operate(Number(firstNumber), 
                                       Number(secondNumber), operator);
             clearDisplay();
-            updateDisplay("= " + operationResult);
+            updateDisplay("= " + trimDecimalPlaces(operationResult));
             updateCalculatorInternalState(operationResult);
             isResultCalculated = true;
 
@@ -116,7 +126,7 @@ operatorsPad.addEventListener("click", (e) => {
         let operationResult = operate(Number(firstNumber), 
                                       Number(secondNumber), operator);
         clearDisplay();
-        updateDisplay("= " + operationResult);
+        updateDisplay("= " + trimDecimalPlaces(operationResult));
         updateCalculatorInternalState(operationResult);  
         isResultCalculated = true;      
 
