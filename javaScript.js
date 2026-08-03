@@ -10,6 +10,7 @@ let isResultCalculated = false;
 //-HTML_REFS--------------------------------
 const display = document.getElementById("display");
 const numbersPad = document.getElementById("numbersPad");
+const undoButton = document.getElementById("undo");
 const clearButton = document.getElementById("clear");
 const operatorsPad = document.getElementById("operatorsPad");
 
@@ -63,6 +64,7 @@ function updateCalculatorInternalState(operationResult){
 
 //-DISPLAY_FUNCTIONS------------------------
 function clearDisplay(){display.textContent = "";}
+
 function updateDisplay(content){display.append(content);}
 
 function getUserInput(inputNumber){
@@ -80,13 +82,42 @@ function getUserInput(inputNumber){
     
 }
 
+function deleteLastDigit(number){
+
+    //All digits removed? Assign '0', else remove last digit
+    return number.length < 1 ? number = "0" : number = number.split("")
+                                                             .slice(0, -1)
+                                                             .join("");
+
+}
+
 //-LISTENERS--------------------------------
-clearButton.addEventListener("click", (e) => {resetCalculator();})
+clearButton.addEventListener("click", (e) => {resetCalculator();});
+
+undoButton.addEventListener("click", (e) => {
+
+    if(!isOperatorSet && !isResultCalculated){
+
+        firstNumber = deleteLastDigit(firstNumber);
+        clearDisplay();
+        updateDisplay(firstNumber);
+
+    } 
+    else if (isOperatorSet && secondNumber !== ""){
+
+        secondNumber = deleteLastDigit(secondNumber);
+        clearDisplay();
+        updateDisplay(firstNumber + " " + operator + " " + secondNumber);
+
+    }
+
+});
 
 numbersPad.addEventListener("click", (e) => {
 
     //A result has been calculated, button pressed without new operation selected
     if(isResultCalculated && !operator){resetCalculator();}
+    if(display.textContent === "0"){clearDisplay();};
 
     updateDisplay(e.target.textContent);
     getUserInput(e.target.textContent);            
@@ -96,13 +127,13 @@ numbersPad.addEventListener("click", (e) => {
 operatorsPad.addEventListener("click", (e) => {    
 
     //"=" is NOT selected
-    if((e.target.textContent !== "=") /*&& (!secondNumber)*/){
+    if((e.target.textContent !== "=")){
 
         //secondNumber !== ""
         if(secondNumber){
 
             let operationResult = operate(Number(firstNumber), 
-                                      Number(secondNumber), operator);
+                                          Number(secondNumber), operator);
             clearDisplay();
             updateDisplay("= " + trimDecimalPlaces(operationResult));
             updateCalculatorInternalState(operationResult);
