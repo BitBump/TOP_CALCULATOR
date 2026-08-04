@@ -4,7 +4,6 @@ let firstNumber = "";
 let secondNumber = "";
 
 //-FLAGS------------------------------------
-let isOperatorSet = false;
 let isResultCalculated = false;
 
 //-HTML_REFS--------------------------------
@@ -46,7 +45,6 @@ function resetCalculator(){
     operator = "";
     firstNumber = "";
     secondNumber = "";
-    isOperatorSet = false;
     isResultCalculated = false;
 
     //Clear display
@@ -62,65 +60,98 @@ function updateCalculatorInternalState(operationResult){
 
 }
 
+//-HELPER_FUNCTIONS-------------------------
+function getCurrentNumber() {
+
+    //Operator set? Yes: return secondNumber - No: return firstNumber
+    return operator !== "" ? secondNumber : firstNumber;
+
+}
+
+function setCurrentNumber(value) {
+
+    //Operator set? Yes: set secondNumber - No: set firstNumber
+    return operator !== "" ? secondNumber = value : firstNumber = value;
+
+}
+
 //-DISPLAY_FUNCTIONS------------------------
 function clearDisplay(){display.textContent = "";}
 
 function updateDisplay(content){display.append(content);}
 
-function getUserInput(inputNumber){
+function getUserInput(inputNumber) {
 
-    if(!isOperatorSet){
-        //Remember: cast to Number before use
-        firstNumber += inputNumber;
-        
+    let current = getCurrentNumber();
+
+    if (inputNumber === ".") {
+
+        if (current === "") {
+
+            current = "0.";
+
+        } else if (!current.includes(".")) {
+
+            current += ".";
+
+        }
+
+    } else {
+
+        current += inputNumber;
+
     }
-    if(isOperatorSet){
-        //Remember: cast to Number before use
-        secondNumber += inputNumber;
-        
-    }
-    
+
+    setCurrentNumber(current);
 }
 
-function deleteLastDigit(number){
+function deleteLastDigit(number) {
 
-    //All digits removed? Assign '0', else remove last digit
-    return number.length < 1 ? number = "0" : number = number.split("")
-                                                             .slice(0, -1)
-                                                             .join("");
+    if (number.length <= 1) {
+        return "";
+    }
+
+    return number.slice(0, -1);
+
+}
+
+function renderDisplay() {
+
+    clearDisplay();
+
+    if (operator === "") {
+
+        updateDisplay(firstNumber || "0");
+
+    } else {
+
+        updateDisplay(`${firstNumber || "0"} ${operator} ${secondNumber ? " " + secondNumber : ""}`);
+
+    }
 
 }
 
 //-LISTENERS--------------------------------
 clearButton.addEventListener("click", (e) => {resetCalculator();});
 
-undoButton.addEventListener("click", (e) => {
+undoButton.addEventListener("click", () => {
 
-    if(!isOperatorSet && !isResultCalculated){
+    if (!isResultCalculated) {
 
-        firstNumber = deleteLastDigit(firstNumber);
-        clearDisplay();
-        updateDisplay(firstNumber);
-
-    } 
-    else if (isOperatorSet && secondNumber !== ""){
-
-        secondNumber = deleteLastDigit(secondNumber);
-        clearDisplay();
-        updateDisplay(firstNumber + " " + operator + " " + secondNumber);
+        setCurrentNumber(deleteLastDigit(getCurrentNumber()));
 
     }
+
+    renderDisplay();
 
 });
 
 numbersPad.addEventListener("click", (e) => {
 
-    //A result has been calculated, button pressed without new operation selected
-    if(isResultCalculated && !operator){resetCalculator();}
-    if(display.textContent === "0"){clearDisplay();};
+    if (isResultCalculated && !operator) {resetCalculator();}
 
-    updateDisplay(e.target.textContent);
-    getUserInput(e.target.textContent);            
+    getUserInput(e.target.textContent);    
+    renderDisplay();
 
 });
 
@@ -146,7 +177,6 @@ operatorsPad.addEventListener("click", (e) => {
         //secondNumber = ""
         else {
             operator = e.target.textContent;
-            isOperatorSet = true;
             updateDisplay(" " + operator + " ");
         }
 
