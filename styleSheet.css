@@ -23,6 +23,25 @@
 #number, #operator, #clear, #undo{
 
     border-radius: 10px;
+    transition-duration: 0.4s;
+
+}
+
+#number:hover, #operator:hover{
+
+    background-color: lightgreen;
+
+}
+
+#clear:hover{
+
+    background-color: lightcoral;
+
+}
+
+#undo:hover{
+
+    background-color: lightgoldenrodyellow;
 
 }
 
@@ -67,7 +86,7 @@
 
     width: 150px;
     border: solid 2px purple;
-    background-color: lightcoral;
+    background-color: palevioletred;
 
     padding: 2px;
 
