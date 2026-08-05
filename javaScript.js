@@ -20,11 +20,6 @@ function divideNumbers(a, b){return b === 0 ? "Can't divide by '0'" : a / b}
 function subtractNumbers(a, b){return a - b;}
 function multiplyNumbers(a, b){return a * b;}
 
-function trimDecimalPlaces(number){
-
-    return (Math.floor(number * 100)) / 100;
-
-}
 
 function operate(firstNumber, secondNumber, operator){
    
@@ -47,6 +42,7 @@ function resetCalculator(){
     firstNumber = "";
     secondNumber = "";
     isResultCalculated = false;
+    pressedButton = null;
 
     //Clear display
     display.textContent = "";
@@ -85,7 +81,14 @@ function calculateResult() {
     );
 
     if (typeof operationResult !== "number") {
+
+        firstNumber = "";
+        secondNumber = "";
+        operator = "";
+        isResultCalculated = false;
+
         return operationResult;
+
     }
 
     updateCalculatorInternalState(operationResult);
@@ -96,12 +99,73 @@ function calculateResult() {
 
 }
 
+//-HANDLER_FUNCTIONS------------------------
+function handleNumberInput(value){
+
+    getUserInput(value);
+    renderDisplay();
+
+}
+
+function handleOperatorInput(button){
+
+    //secondNumber exists: calculate previous operation first
+    if (secondNumber) {
+
+        let result = calculateResult();
+
+        clearDisplay();
+        updateDisplay("= " + formatDisplayNumber(result));
+
+        operator = button;
+        updateDisplay(" " + operator + " ");
+
+    } 
+    //secondNumber does not exist
+    else {
+
+        //Update operator with new selection, then re-render the display
+        //The display doesn't store information, shows it only
+        operator = button;
+        renderDisplay();
+
+    }
+
+
+}
+
+function handleEquals(){
+
+    if (secondNumber) {
+
+        let result = calculateResult();
+
+        clearDisplay();
+        updateDisplay("= " + formatDisplayNumber(result));
+
+    }
+
+}
+
+function handleUndo(){
+
+    setCurrentNumber(deleteLastDigit(getCurrentNumber()));
+    renderDisplay();
+
+}
+
 //-DISPLAY_FUNCTIONS------------------------
 function clearDisplay(){display.textContent = "";}
 
 function updateDisplay(content){display.append(content);}
 
+
+
 function getUserInput(inputNumber) {
+
+    if (isResultCalculated && operator === "") {
+        resetCalculator();
+    }
 
     let current = getCurrentNumber();
 
@@ -126,6 +190,7 @@ function getUserInput(inputNumber) {
     setCurrentNumber(current);
 }
 
+
 function deleteLastDigit(number) {
 
     if (number.length <= 1) {
@@ -142,13 +207,62 @@ function renderDisplay() {
 
     if (operator === "") {
 
-        updateDisplay(firstNumber || "0");
+        updateDisplay(firstNumber ? formatDisplayNumber(firstNumber) : "0");
 
     } else {
 
-        updateDisplay(`${firstNumber || "0"} ${operator} ${secondNumber ? " " + secondNumber : ""}`);
+        updateDisplay(
+            `${firstNumber ? formatDisplayNumber(firstNumber) : "0"} ${operator}${secondNumber ? " " + formatDisplayNumber(secondNumber) : ""}`
+        );
 
     }
+
+}
+
+function formatDisplayNumber(number) {
+
+    // If the string cannot be converted to a number, return it untouched
+    // Prevents error message from being replaced with 'Nan'
+    if (typeof number === "string" && isNaN(Number(number))) {
+
+        return number;
+
+    }
+
+    if (typeof number === "string") {
+
+        //Preserves decimal point that is otherwise stripped by Number conversion
+        if (number.endsWith(".")) {
+
+            return String(Number(number.slice(0, -1))) + ".";
+
+        }
+
+        //Removes leading zeros from integer part, preserves decimal part as-is
+        if (number.includes(".")) {
+
+            let [integer, decimal] = number.split(".");
+
+            //Number conversion removes excess leading zeroes
+            integer = String(Number(integer));
+
+            return integer + "." + decimal;
+
+        }
+
+    }
+
+    // Number is assumed complete, is thus converted then formatted
+    number = Number(number);
+
+    // Safety: if conversion fails, do not attempt arithmetic on NaN
+    if (Number.isNaN(number)) {
+
+        return number;
+
+    }
+
+    return Math.floor(number * 100) / 100;
 
 }
 
@@ -157,9 +271,7 @@ clearButton.addEventListener("click", (e) => {resetCalculator();});
 
 undoButton.addEventListener("click", () => {
 
-    setCurrentNumber(deleteLastDigit(getCurrentNumber()));
-
-    renderDisplay();
+    handleUndo();
 
 });
 
@@ -179,14 +291,7 @@ numbersPad.addEventListener("pointerup", (e) => {
 
     if (e.target === pressedButton) {
 
-        if (isResultCalculated && !operator) {
-
-            resetCalculator();
-
-        }
-
-        getUserInput(e.target.textContent);
-        renderDisplay();
+        handleNumberInput(e.target.textContent);
 
     }
 
@@ -215,42 +320,64 @@ operatorsPad.addEventListener("pointerup", (e) => {
         //"=" is NOT selected
         if (button !== "=") {
 
-            //secondNumber exists: calculate previous operation first
-            if (secondNumber) {
-
-                let result = calculateResult();
-
-                clearDisplay();
-                updateDisplay("= " + trimDecimalPlaces(result));
-
-                operator = button;
-                updateDisplay(" " + operator + " ");
-
-            } 
-            //secondNumber does not exist
-            else {
-
-                //Update operator with new selection, then re-render the display
-                //The display doesn't store information, show it only
-                operator = button;
-                renderDisplay();
-
-            }
+            handleOperatorInput(button);
 
         }
 
         //"=" IS selected
-        else if (button === "=" && secondNumber) {
+        else if (button === "=") {
 
-            let result = calculateResult();
-
-            clearDisplay();
-            updateDisplay("= " + trimDecimalPlaces(result));
+            handleEquals();
 
         }
 
     }
 
     pressedButton = null;
+
+});
+
+
+
+
+//-KEYBOARD_SUPPORT-------------------------
+document.addEventListener("keydown", (e) => {
+
+    const value = e.key;
+
+    // Numbers and decimal point
+    if (/^[0-9]$/.test(value) || value === ".") {
+
+        handleNumberInput(value);
+
+    }
+
+    // Operators
+    else if (/^[+\-*/]$/.test(value)) {
+
+        handleOperatorInput(value);
+
+    }
+
+    // Equals (Enter)
+    else if (value === "Enter") {
+
+        handleEquals();
+
+    }
+
+    // Backspace
+    else if (value === "Backspace") {
+
+        handleUndo();
+
+    }
+
+    // Escape = Clear
+    else if (value === "Escape") {
+
+        resetCalculator();
+
+    }
 
 });
